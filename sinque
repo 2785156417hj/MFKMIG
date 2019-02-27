@@ -1,0 +1,15 @@
+function s=sinque(x)
+% SINQUE: sinc function evaluation
+% 
+% s=sinque(x)
+% computes sin(x)/x
+%
+% x= vector of input arguments
+% s= vector of values of sin(x)/x
+% 
+
+s=zeros(size(x));
+ii=find(abs(x)<=eps);
+s(ii)= ones(1,length(ii));
+ii= find(s~=1.0);
+s(ii)=sin(x(ii))./x(ii);
