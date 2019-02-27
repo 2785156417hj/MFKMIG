@@ -1,0 +1,63 @@
+function [r,t]= ifftrl(spec,f)
+% IFFTRL inverse Fourier transform for real time series
+%
+% [r,t]= ifftrl(spec,f)
+%
+% Inverse fourier transform to a real trace. The spectrum is
+% assumed to be of length floor(n/2+1) where n is the length of the time
+% series to be created. (This is automatically the case if it was created by
+% fftrl. This is a slightly ambiguous situation since, for
+% example, time series of length 4 and length 5 will both result in 3
+% frequency samples. However, only the first case will have a sample at
+% Nyquist. Since the sample at Nyquist should be purely real, the algorithm
+% tests the sample spec(end) for a nonzero imaginary part. If a zero
+% imaginary part is found, it is assumed to be a sample at Nyquist. So, a
+% problem could arise if the spectrum has been altered such that the
+% Nyquist is no longer purely real.
+%
+% spec= input spectrum
+% f= input frequency sample vector 
+% r= output trace
+% t= output time vector
+%
+
+
+%test for matrix or vector
+[m,n]=size(spec);
+itr=0;
+if( ~(m-1)*(n-1) )
+	if(m==1) spec=spec.'; itr=1; end
+	nsamp=length(spec);
+	ntr=1;
+else
+	nsamp=m;
+	ntr=n;
+end
+
+% form the conjugate symmetric complex spectrum expected by ifft
+%test for presence of nyquist
+nyq=0;
+if(isreal(spec(end))) nyq=1; end
+if(nyq)
+    L1=1:nsamp;L2=nsamp-1:-1:2;
+else
+    L1=1:nsamp; L2=nsamp:-1:2;
+end
+symspec=[spec(L1,:);conj(spec(L2,:))];
+
+% transform the array
+ r=real(ifft(symspec));
+
+% build the time vector
+ n=length(r);
+ df=f(2)-f(1);
+ dt=1/(n*df);
+ %dt=1./(2*f(length(f)));
+ %tmax=size(r,1)*dt;
+ %t=linspace(0.,tmax,size(r,1));
+ t=dt*(0:n-1)';
+ 
+ if(itr==1)
+ 	r=r.';
+    t=t';
+ end
